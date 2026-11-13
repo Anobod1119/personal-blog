@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wzhの小窝 · 个人博客</title>
+
+
+<style>
+/* ===== 1. 全局重置与基础字体 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;          /* padding、border 不撑破固定宽度 */
+}
+
+html {
+    scroll-behavior: smooth;         /* 锚点跳转平滑滚动 */
+}
+
+body {
+    font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+    line-height: 1.8;
+    font-size: 17px;
+    color: #2c3e50;
+    background-color: #eaf7ff;       /* 参考站点的明亮浅青底 */
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+}
+
+/* ===== 2. 顶部悬浮导航（叠在头图之上） ===== */
+header {
+    position: relative;
+}
+
+.topbar {
+    position: absolute;              /* 悬浮在头图上方 */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;                   /* Flex：站点名 + 导航左右分布 */
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 34px;
+    color: #ffffff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.site-name {
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+nav {
+    /* 半透明胶囊底：让白字在浅色天空上也清晰，延续毛玻璃语言 */
+    background-color: rgba(30, 80, 130, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 26px;
+    padding: 3px 10px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+nav ul {
+    display: flex;                   /* Flex：导航项水平排列 */
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;                /* 清除小圆点 */
+}
+
+nav a {
+    display: block;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px 16px;
+    border-radius: 20px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* 导航项前面的小色点，替代图标，保持明亮清新 */
+.nav-item::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background-color: #ffd166;
+    vertical-align: middle;
+}
+
+nav li:nth-child(2) .nav-item::before { background-color: #ff8fa3; }
+nav li:nth-child(3) .nav-item::before { background-color: #8ce0c0; }
+nav li:nth-child(4) .nav-item::before { background-color: #b39bff; }
+
+/* 【JS 交互 1】由 JavaScript 动态添加 / 移除的导航高亮类 */
+nav a.active {
+    background-color: #ffd166;
+    color: #2c3e50;
+    text-shadow: none;
+}
+
+/* ===== 3. 全屏头图 + 毛玻璃信息卡（个人简介 section） ===== */
+.hero {
+    height: 560px;
+    background: url("images/hero.png") center center / cover no-repeat;
+    display: flex;                   /* Flex：内容整体水平垂直居中 */
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+}
+
+/* 半透明压暗层，保证白色文字可读 */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(30, 90, 140, 0.18), rgba(30, 90, 140, 0.32));
+}
+
+.glass {
+    position: relative;
+    z-index: 2;
+    min-width: 420px;
+    max-width: 90%;
+    padding: 26px 44px 30px;
+    border-radius: 24px;
+    background-color: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(10px);     /* 毛玻璃（液态玻璃）效果 */
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 28px rgba(30, 90, 140, 0.25);
+    color: #ffffff;
+}
+
+.glass .avatar {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;              /* 正方形 + 50% = 圆形头像 */
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.glass .avatar:hover {
+    transform: rotate(8deg) scale(1.08);
+}
+
+.glass h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 6px;
+    letter-spacing: 4px;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.glass .hero-en {
+    font-size: 13px;
+    letter-spacing: 3px;
+    opacity: 0.9;
+    margin: 4px 0 10px;
+}
+
+.glass .hero-title {
+    font-size: 40px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+.glass .hero-intro {
+    font-size: 16px;
+    margin-top: 12px;
+    padding: 8px 16px;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.20);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-hint {
+    position: absolute;
+    bottom: 76px;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: none;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* 参考站点的波浪形白色分隔 */
+.wave {
+    height: 70px;
+    margin-top: -46px;
+    position: relative;
+    z-index: 3;
+    background-color: #ffffff;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+/* ===== 4. 通用区块标题 ===== */
+h2 {
+    font-size: 27px;
+    color: #2c3e50;
+    margin: 34px 0 18px;
+    padding-left: 14px;
+    border-left: 6px solid #49b6e8;
+}
+
+/* ===== 5. 关于我 ===== */
+.about {
+    background-color: #f4fbff;
+    border: 1px solid #d7eefb;
+    border-radius: 16px;
+    padding: 22px 26px;
+    box-shadow: 0 3px 12px rgba(73, 182, 232, 0.12);
+}
+
+.about p {
+    font-size: 17px;
+    margin-bottom: 10px;
+}
+
+/* 标签胶囊：Flex 自动换行 */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.tags span {
+    padding: 5px 16px;
+    border-radius: 18px;
+    background-color: #dff1ff;
+    color: #2b7fb5;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* ===== 6. 博文展示：Flex 多行多列（2 列 × 3 行） ===== */
+.post-wrap {
+    display: flex;                   /* Flex 布局 */
+    flex-wrap: wrap;                 /* 自动换行 => 多行多列 */
+    gap: 18px;
+}
+
+.post-card {
+    width: calc((100% - 18px) / 2);  /* 每行 2 张 */
+    display: flex;                   /* 卡片内部：左图右文横向排列 */
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    padding: 14px;
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e2f1fb;
+    border-radius: 16px;             /* 圆角 */
+    box-shadow: 0 3px 12px rgba(73, 182, 232, 0.16);  /* 阴影 */
+    transition: all 0.3s ease;       /* 悬浮平滑过渡 */
+}
+
+.post-card:hover {
+    transform: scale(1.03) translateY(-4px);           /* 悬浮放大 */
+    box-shadow: 0 10px 24px rgba(73, 182, 232, 0.35);
+}
+
+.post-card img {
+    width: 140px;
+    height: 104px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+
+.post-text h4 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 4px;
+    padding-right: 26px;
+}
+
+.post-text p {
+    font-size: 14px;
+    color: #6b7a93;
+    line-height: 1.6;
+    margin-bottom: 6px;
+}
+
+.post-meta {
+    font-size: 13px;
+    color: #49b6e8;
+    font-weight: bold;
+}
+
+/* 右上角序号角标，参考归档页样式 */
+.post-num {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #8f9bb3;
+    border-radius: 50%;
+}
+
+/* ===== 7. 侧边辅助信息 aside ===== */
+aside {
+    margin-top: 30px;
+    background-color: #f4fbff;
+    border: 1px solid #d7eefb;
+    border-radius: 16px;
+    padding: 20px 24px;
+}
+
+aside h3 {
+    font-size: 20px;
+    color: #2b7fb5;
+    margin-bottom: 12px;
+}
+
+.side-grid {
+    display: flex;                   /* Flex 三栏 */
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.side-grid div {
+    flex: 1;
+    min-width: 200px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(73, 182, 232, 0.1);
+}
+
+.side-grid strong {
+    display: block;
+    color: #2b7fb5;
+    font-size: 17px;
+    margin-bottom: 6px;
+}
+
+/* ===== 8. 留言表单 ===== */
+.msg-form {
+    margin-top: 30px;
+    background-color: #ffffff;
+    border: 1px solid #e2f1fb;
+    border-radius: 16px;
+    padding: 22px 26px 28px;
+    box-shadow: 0 3px 12px rgba(73, 182, 232, 0.12);
+}
+
+.msg-form p {
+    margin: 12px 0;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.msg-form label {
+    display: inline-block;
+    width: 80px;
+}
+
+.msg-form input,
+.msg-form textarea {
+    width: 340px;
+    max-width: 100%;
+    padding: 9px 12px;
+    font-size: 16px;
+    font-family: inherit;
+    border: 1px solid #cfd9ea;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.msg-form input:focus,
+.msg-form textarea:focus {
+    border-color: #49b6e8;
+    box-shadow: 0 0 0 3px rgba(73, 182, 232, 0.18);
+}
+
+.msg-form textarea {
+    height: 110px;
+    vertical-align: top;
+    resize: vertical;
+}
+
+.msg-form button {
+    padding: 10px 28px;
+    font-size: 17px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #49b6e8;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.msg-form button:hover {
+    background-color: #2b96cd;
+    transform: translateY(-2px);
+}
+
+/* ===== 9. 返回顶部按钮（固定定位） ===== */
+#topBtn {
+    position: fixed;                 /* 固定在视口右下角 */
+    bottom: 30px;
+    right: 30px;
+    display: none;                   /* 默认隐藏，由 JS 控制显隐 */
+    padding: 12px 18px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #8f7ae6;
+    border-radius: 26px;
+    box-shadow: 0 4px 14px rgba(143, 122, 230, 0.5);
+    cursor: pointer;
+    user-select: none;
+    z-index: 99;
+    transition: background-color 0.3s;
+}
+
+#topBtn:hover {
+    background-color: #7359d6;
+}
+
+/* ===== 10. 页脚（参考站点的亮绿色草地感） ===== */
+footer {
+    text-align: center;
+    padding: 26px 20px 30px;
+    color: #2c3e50;
+    font-size: 16px;
+    background: linear-gradient(90deg, #a8e6b8, #b6ecf3 55%, #d8d0ff);
+}
+
+footer p {
+    margin: 4px 0;
+}
+
+/* 个人主页链接（GitHub / Gitee） */
+.site-links a {
+    color: #1b5b8a;
+    font-weight: bold;
+    text-decoration: none;
+    border-bottom: 2px dotted #49b6e8;
+    margin: 0 4px;
+    transition: color 0.3s;
+}
+
+.site-links a:hover {
+    color: #d1453b;
+    border-bottom-color: #d1453b;
+}
+
+.side-grid a {
+    color: #2b7fb5;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.side-grid a:hover {
+    color: #d1453b;
+}
+
+/* ===== 11. 窄屏适配 ===== */
+@media (max-width: 800px) {
+    .post-card { width: 100%; }
+    .topbar { justify-content: center; padding: 12px 16px; }
+    .hero { height: 500px; }
+    .glass { min-width: 0; padding: 20px 22px; }
+    .glass .hero-title { font-size: 28px; }
+    .post-card img { width: 110px; height: 90px; }
+}
+
+@media (max-width: 480px) {
+    .post-card img { width: 90px; height: 80px; }
+    .post-text h4 { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== 页面头部：站点名 + nav（四个必需菜单项） ========== -->
+<header id="home">
+    <div class="topbar">
+        <h1 class="site-name">wzhの小窝</h1>
+        <nav>
+            <ul>
+                <li><a href="#home" class="nav-item">首页</a></li>
+                <li><a href="#about" class="nav-item">关于我</a></li>
+                <li><a href="#works" class="nav-item">作品展示</a></li>
+                <li><a href="#message" class="nav-item">留言联系</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- 个人简介区域：头像 img + 姓名 h3 + 一句话简介 p（参考站点的毛玻璃卡） -->
+    <section class="hero" id="intro">
+        <div class="glass">
+            <img class="avatar" src="images/avatar.jpg" alt="我的个人头像">
+            <h3>wzh</h3>
+            <p class="hero-en">HI THERE, WELCOME TO MY BLOG</p>
+            <p class="hero-title">记录技术，分享生活</p>
+            <p class="hero-intro">一句话简介：Web 前端学习爱好者，在这里写下学习笔记与生活碎碎念。</p>
+        </div>
+        <a class="scroll-hint" href="#about">向下滚动 ↓</a>
+    </section>
+</header>
+
+<!-- 波浪形白色分隔 -->
+<div class="wave"></div>
+
+<main class="container">
+
+    <!-- ========== 关于我：学习方向、兴趣爱好 ========== -->
+    <section id="about">
+        <h2>关于我</h2>
+        <div class="about">
+            <p>一名正在学习 Web 前端开发的学生，喜欢把课堂知识整理成博文，也喜欢把页面做得明亮好看。</p>
+            <p>学习方向：HTML5 语义化结构 → CSS3 样式与 Flex 布局 → JavaScript 基础交互 → 静态博客部署上线。</p>
+            <p>兴趣爱好：写学习笔记、收集蓝紫粉配色、拍云和山、折腾个人小站。</p>
+            <div class="tags">
+                <span>HTML5</span><span>CSS3</span><span>Flex 布局</span>
+                <span>JavaScript</span><span>前端笔记</span><span>生活随笔</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 博文 / 作品展示：Flex 多行多列，2 列 × 3 行共 6 张卡片 ========== -->
+    <section id="works">
+        <h2>博文 · 作品展示</h2>
+        <div class="post-wrap">
+
+            <!-- 文章卡片 1 -->
+            <article class="post-card">
+                <img src="images/post1.png" alt="HTML5 语义化标签学习笔记配图">
+                <div class="post-text">
+                    <h4>HTML5 语义化标签入门</h4>
+                    <p>用 header、nav、main、article、footer 搭出有含义的页面骨架。</p>
+                    <span class="post-meta">2026-10-18 · 前端笔记</span>
+                </div>
+                <span class="post-num">1</span>
+            </article>
+
+            <!-- 文章卡片 2 -->
+            <article class="post-card">
+                <img src="images/post2.png" alt="CSS3 卡片特效练习配图">
+                <div class="post-text">
+                    <h4>CSS3 圆角、阴影与过渡</h4>
+                    <p>border-radius、box-shadow 与 transition 做出悬浮放大卡片。</p>
+                    <span class="post-meta">2026-10-12 · CSS 练习</span>
+                </div>
+                <span class="post-num">2</span>
+            </article>
+
+            <!-- 文章卡片 3 -->
+            <article class="post-card">
+                <img src="images/post3.png" alt="Flex 布局练习配图">
+                <div class="post-text">
+                    <h4>Flex 多行多列布局小结</h4>
+                    <p>flex-wrap 配合 gap 与 calc，让卡片自动换行又保持等宽。</p>
+                    <span class="post-meta">2026-09-28 · 布局笔记</span>
+                </div>
+                <span class="post-num">3</span>
+            </article>
+
+            <!-- 文章卡片 4 -->
+            <article class="post-card">
+                <img src="images/post4.png" alt="下拉导航菜单练习配图">
+                <div class="post-text">
+                    <h4>纯 CSS 下拉导航怎么做</h4>
+                    <p>子绝父相加上 :hover 控制 display，不写一行 JS 也能展开菜单。</p>
+                    <span class="post-meta">2026-09-15 · CSS 练习</span>
+                </div>
+                <span class="post-num">4</span>
+            </article>
+
+            <!-- 文章卡片 5 -->
+            <article class="post-card">
+                <img src="images/post5.png" alt="表单验证练习配图">
+                <div class="post-text">
+                    <h4>表单非空验证的三种写法</h4>
+                    <p>从 required 到 onsubmit，理解浏览器校验与 JS 校验的分工。</p>
+                    <span class="post-meta">2026-09-03 · JavaScript</span>
+                </div>
+                <span class="post-num">5</span>
+            </article>
+
+            <!-- 文章卡片 6 -->
+            <article class="post-card">
+                <img src="images/post6.png" alt="关键帧动画练习配图">
+                <div class="post-text">
+                    <h4>transform 与 @keyframes 笔记</h4>
+                    <p>平移、旋转、缩放、倾斜，再用关键帧做一个循环动画。</p>
+                    <span class="post-meta">2026-08-21 · CSS3 动画</span>
+                </div>
+                <span class="post-num">6</span>
+            </article>
+
+        </div>
+
+        <!-- 侧边辅助信息：博主小档案、分类、最近更新 -->
+        <aside>
+            <h3>站点小档案</h3>
+            <div class="side-grid">
+                <div>
+                    <strong>关于博主</strong>
+                    wzh，Web 前端方向在读，坚持把每节课的练习整理成博文。
+                </div>
+                <div>
+                    <strong>文章分类</strong>
+                    前端笔记 6 篇 ｜ CSS 练习 3 篇 ｜ 生活随笔 2 篇。
+                </div>
+                <div>
+                    <strong>最近更新</strong>
+                    2026-10-18《HTML5 语义化标签入门》，本站持续更新中。
+                </div>
+                <div>
+                    <strong>我的主页</strong>
+                    <a href="https://github.com/Anobod1119" target="_blank" rel="noopener">GitHub</a> ｜
+                    <a href="https://gitee.com/wzh1119" target="_blank" rel="noopener">Gitee</a>
+                </div>
+            </div>
+        </aside>
+    </section>
+
+    <!-- ========== 留言表单：姓名、邮箱、留言框、提交按钮 ========== -->
+    <section id="message" class="msg-form">
+        <h2>给我留言</h2>
+        <!-- novalidate：关闭浏览器自带校验，保证由下面的 JS 完成非空提示 -->
+        <form id="myForm" novalidate>
+            <p>
+                <label for="username">姓名：</label>
+                <input type="text" id="username" name="username" placeholder="请输入你的姓名">
+            </p>
+            <p>
+                <label for="email">邮箱：</label>
+                <input type="email" id="email" name="email" placeholder="请输入你的邮箱">
+            </p>
+            <p>
+                <label for="msg">留言：</label>
+                <textarea id="msg" name="msg" placeholder="想对我说什么？"></textarea>
+            </p>
+            <p><button type="submit">提交留言</button></p>
+        </form>
+    </section>
+
+</main>
+
+<!-- ========== 返回顶部按钮：fixed 固定，滚动超过 200px 才显示 ========== -->
+<div id="topBtn" title="回到顶部">↑ 回到顶部</div>
+
+<!-- ========== 页脚：联系信息 + 版权符号 ========== -->
+<footer>
+    <p>联系我：wiz_h@outlook.com ｜ Web 前端开发课程综合实践作业</p>
+    <p class="site-links">我的主页：
+        <a href="https://github.com/Anobod1119" target="_blank" rel="noopener">GitHub / Anobod1119</a> ｜
+        <a href="https://gitee.com/wzh1119" target="_blank" rel="noopener">Gitee / wzh1119</a>
+    </p>
+    <p>&copy;2026 wzhの小窝 版权所有</p>
+    <p>「Another branch will grow and flourish」</p>
+</footer>
+
+<!-- 【作业要求】JavaScript 统一写在页面 <script> 标签内 -->
+<script>
+    /* ===== 交互 1：导航高亮 —— 鼠标移入切换 class，移出取消 ===== */
+    // 取得所有带 .nav-item 的导航链接
+    var navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(function (item) {
+        // 鼠标移入：添加 active 类，触发 CSS 背景高亮
+        item.onmouseover = function () {
+            this.classList.add('active');
+        };
+        // 鼠标移出：移除 active 类，恢复原样
+        item.onmouseout = function () {
+            this.classList.remove('active');
+        };
+    });
+
+    /* ===== 交互 2：返回顶部 —— 监听滚动控制显隐，点击平滑回顶 ===== */
+    var topBtn = document.getElementById('topBtn');
+    window.onscroll = function () {
+        // 页面向下滚动超过 200px 才显示按钮
+        if (window.scrollY > 200) {
+            topBtn.style.display = 'block';
+        } else {
+            topBtn.style.display = 'none';
+        }
+    };
+    topBtn.onclick = function () {
+        // behavior:'smooth' 实现平滑滚动，而不是瞬间跳回顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    /* ===== 交互 3：表单验证 —— 提交时判断姓名、邮箱是否为空 ===== */
+    var myForm = document.getElementById('myForm');
+    myForm.onsubmit = function (e) {
+        // trim() 去掉首尾空格，避免只输入空格也算填写
+        var uname = document.getElementById('username').value.trim();
+        var mail = document.getElementById('email').value.trim();
+        if (uname === '' || mail === '') {
+            alert('姓名和邮箱不能为空！');   // 弹出提示
+            e.preventDefault();             // 阻止表单提交
+        } else {
+            alert('留言提交成功，感谢你的反馈！');
+            e.preventDefault();             // 静态博客没有后端，这里不真正跳转
+        }
+    };
+</script>
+</body>
+</html>
